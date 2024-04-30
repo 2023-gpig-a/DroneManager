@@ -1,11 +1,24 @@
 from typing import Tuple
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
 from enum import Enum
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173", # frontend dev
+        "http://localhost:8080", # frontend Docker
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 DRONE_QUANTITY = 5
 DRONE_CENTER = [54.39, -0.937]
 DRONE_STATUSES = ["idle", "flying", "unknown"]
