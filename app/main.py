@@ -71,18 +71,19 @@ async def get_drone_status() -> list[Tuple[DroneId, DroneData]]:
 # called by the frontend
 @app.post("/drone_dispatch/circle")
 async def drone_dispatch_circle(target: TargetCircle) -> None:
-    pass
+    return
 
 
 # update the stored status of a drone
 # called by the drone simulation
 @app.post("/drone_status/{id}")
 async def update_drone_status(id: DroneId, drone: DroneData) -> None:
-    pass
+    return
 
 
 # retrieve the next sequence of points that a drone needs to go and "scan"
 # called by the drone simulation
 @app.get("/next_area")
 async def get_next_drone_area() -> list[LatLon]:
-    pass
+    raise Exception("not implemented")
+    return []
