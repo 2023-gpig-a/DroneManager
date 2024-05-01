@@ -13,11 +13,11 @@ class TargetCircle(BaseModel):
     lon: float
     radius: float
 
-    def slices(self, vision: float) -> list[float]:
-        slice_angle = math.atan2(vision * 2, self.radius)
+    def slice_angles(self, vision: float) -> list[float]:
+        inc_angle = math.atan2(vision * 2, self.radius)
         # TODO: does this want to be floor or ceil?
-        num_slices = int(math.ceil(2 * math.pi / slice_angle))
-        return [slice_angle * i for i in range(num_slices)]
+        num_slices = int(math.ceil(2 * math.pi / inc_angle))
+        return [inc_angle * i for i in range(num_slices)]
 
     def displace_from_centre(self, theta: float, dist: float) -> LatLon:
         newlat: float = (math.sin(theta) * dist) + self.lat
@@ -28,7 +28,7 @@ class TargetCircle(BaseModel):
         centre: LatLon = (self.lat, self.lon)
         coords: list[LatLon] = [centre]
 
-        for theta in self.slices(vision):
+        for theta in self.slice_angles(vision):
             coords.append(self.displace_from_centre(theta, self.radius))
             coords.append(centre)
 
@@ -38,7 +38,7 @@ class TargetCircle(BaseModel):
         centre: LatLon = (self.lat, self.lon)
         coords: list[LatLon] = [centre]
 
-        slices = self.slices(vision)
+        slices = self.slice_angles(vision)
 
         for i in range(0, len(slices), 2):
             theta1 = slices[i]
