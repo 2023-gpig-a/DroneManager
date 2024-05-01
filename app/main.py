@@ -1,6 +1,6 @@
 import random
 from enum import Enum
-from typing import Tuple
+from typing import Tuple, Dict, List
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,11 +19,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DRONE_QUANTITY = 5
-DRONE_CENTER = [54.39, -0.937]
-DRONE_STATUSES = ["idle", "flying", "unknown"]
-
+DroneId = str
 LatLon = Tuple[float, float]
+
+
+class DroneData(BaseModel):
+    id: DroneId
+    status: str
+    battery: int
+    lastUpdate: str
+    lastSeen: LatLon
+
+
+DRONE_STATUSES = ["idle", "flying", "unknown"]
+DRONES: Dict[DroneId, DroneData] = dict()
 
 
 @app.get("/")
@@ -31,20 +40,15 @@ async def hello_world():
     return {"response": "Hello World"}
 
 
-class DroneData(BaseModel):
-    id: str
-    status: str
-    battery: int
-    lastUpdate: str
-    lastSeen: Tuple[float, float]
-
-
 # get the status (position) of all the drones
 # called by the frontend
 @app.get("/drone_status")
-async def get_drone_status():
+async def get_drone_status() -> List[DroneData]:
+    DRONE_QUANTITY = 5
+    DRONE_CENTER = [54.39, -0.937]
+
     # TODO: send from internal storage
-    def create_random_drone(id: str):
+    def create_random_drone(id: DroneId):
         data = DroneData(
             id=id,
             status=str(random.choice(DRONE_STATUSES)),
@@ -65,13 +69,13 @@ async def get_drone_status():
 # send the drone fleet to search a particular area
 # currently only supports a circle
 # called by the frontend
-@app.post("/drone_dispatch")
-async def drone_dispatch(target: LatLon, radius: float):
+@app.post("/drone_dispatch/circle")
+async def drone_dispatch_circle(target: LatLon, radius: float) -> None:
     pass
 
 
-# notify that a drone has moved
+# update the stored status of a drone
 # called by the drone simulation
 @app.post("/drone_status")
-async def update_drone_status(position: LatLon):
+async def update_drone_status(drone: DroneData) -> None:
     pass
