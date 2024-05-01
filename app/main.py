@@ -32,6 +32,7 @@ class DroneData(BaseModel):
 
 DRONE_STATUSES = ["idle", "flying", "unknown"]
 DRONES: dict[DroneId, DroneData] = dict()
+DRONE_VISION = 1.0
 
 ROUTES_QUEUE: list[list[LatLon]] = []
 
@@ -44,26 +45,17 @@ async def hello_world():
 # get the status (position) of all the drones
 # called by the frontend
 @app.get("/drone_status")
-async def get_drone_status() -> list[Tuple[DroneId, DroneData]]:
-    DRONE_QUANTITY = 5
-    DRONE_CENTER = [54.39, -0.937]
+async def get_drone_status() -> dict[DroneId, DroneData]:
+    return DRONES
 
-    # TODO: send from internal storage
-    def create_random_drone(id: DroneId) -> Tuple[DroneId, DroneData]:
-        return (
-            id,
-            DroneData(
-                status=str(random.choice(DRONE_STATUSES)),
-                battery=random.randint(0, 100),
-                lastUpdate="",
-                lastSeen=(
-                    DRONE_CENTER[0] + random.random() * 0.05,
-                    DRONE_CENTER[1] + random.random() * 0.05,
-                ),
-            ),
-        )
 
-    return [create_random_drone(str(i + 1)) for i in range(DRONE_QUANTITY)]
+@app.get("/drone_status/{id}")
+async def get_individual_drone(id: DroneId) -> DroneData:
+    # TODO: handle KeyErrors better
+    return DRONES[id]
+
+
+ROUTING_METHOD = TargetCircle.path_method1
 
 
 # send the drone fleet to search a particular area
@@ -71,6 +63,7 @@ async def get_drone_status() -> list[Tuple[DroneId, DroneData]]:
 # called by the frontend
 @app.post("/drone_dispatch/circle")
 async def drone_dispatch_circle(target: TargetCircle) -> None:
+    ROUTES_QUEUE.append(ROUTING_METHOD(target, DRONE_VISION))
     return
 
 
@@ -78,6 +71,7 @@ async def drone_dispatch_circle(target: TargetCircle) -> None:
 # called by the drone simulation
 @app.post("/drone_status/{id}")
 async def update_drone_status(id: DroneId, drone: DroneData) -> None:
+    DRONES[id] = drone
     return
 
 
@@ -85,5 +79,4 @@ async def update_drone_status(id: DroneId, drone: DroneData) -> None:
 # called by the drone simulation
 @app.get("/next_area")
 async def get_next_drone_area() -> list[LatLon]:
-    raise Exception("not implemented")
-    return []
+    return ROUTES_QUEUE.pop()
