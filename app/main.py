@@ -1,10 +1,13 @@
 import random
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Tuple
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from .area_resolution import TargetCircle
+from .types import DroneId, LatLon
 
 app = FastAPI()
 
@@ -19,9 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DroneId = str
-LatLon = Tuple[float, float]
-
 
 class DroneData(BaseModel):
     status: str
@@ -31,7 +31,9 @@ class DroneData(BaseModel):
 
 
 DRONE_STATUSES = ["idle", "flying", "unknown"]
-DRONES: Dict[DroneId, DroneData] = dict()
+DRONES: dict[DroneId, DroneData] = dict()
+
+ROUTES_QUEUE: list[list[LatLon]] = []
 
 
 @app.get("/")
@@ -42,7 +44,7 @@ async def hello_world():
 # get the status (position) of all the drones
 # called by the frontend
 @app.get("/drone_status")
-async def get_drone_status() -> List[Tuple[DroneId, DroneData]]:
+async def get_drone_status() -> list[Tuple[DroneId, DroneData]]:
     DRONE_QUANTITY = 5
     DRONE_CENTER = [54.39, -0.937]
 
@@ -64,12 +66,6 @@ async def get_drone_status() -> List[Tuple[DroneId, DroneData]]:
     return [create_random_drone(str(i + 1)) for i in range(DRONE_QUANTITY)]
 
 
-class TargetCircle(BaseModel):
-    lat: float
-    lon: float
-    radius: float
-
-
 # send the drone fleet to search a particular area
 # currently only supports a circle
 # called by the frontend
@@ -88,5 +84,5 @@ async def update_drone_status(id: DroneId, drone: DroneData) -> None:
 # retrieve the next sequence of points that a drone needs to go and "scan"
 # called by the drone simulation
 @app.get("/next_area")
-async def get_next_drone_area() -> List[LatLon]:
+async def get_next_drone_area() -> list[LatLon]:
     pass
