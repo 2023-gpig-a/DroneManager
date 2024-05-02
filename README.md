@@ -1,6 +1,9 @@
 # Drone Manager
 
-This system is responsible for the following:
+This system is responsible for interfacing between the frontend systems and the drone management software provided by manufacturers.
+
+It takes areas of interest and resolves them into search patterns to photograph for the backend drone software.
+It also allows the frontend to get information about the drones' statuses.
 
 ## Running without docker
 ```
@@ -17,6 +20,6 @@ docker build -t drone_manager_image .
 docker run -d --name dronemanager -p 8080:8080 drone_manager_image
 ```
 
-## Endpoints:
+## Endpoints
 
-`/get_drone_status`
+You can view the endpoints and accompanying API doc by running the service, then going to `http://hostname:port/docs`.
