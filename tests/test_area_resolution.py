@@ -5,15 +5,22 @@ from app.types import LatLon
 
 
 class TestCircleRouting(unittest.TestCase):
+    """Base class to test the different routing methods.
+
+    Each class that inherits from this should test one routing method, and override `routing_method`.
+    """
+
+    routing_method = None
+
     def assert_latlon_lists_equal(
         self,
         left: list[LatLon],
         right: list[LatLon],
         rel_tol=0.001,
     ):
+        """Assert that two lists of latitudes and longitudes are equal within a margin of error."""
         self.assertEqual(len(left), len(right))
-        for pair in zip(left, right):
-            l, r = pair
+        for l, r in zip(left, right):
             self.assertTrue(math.isclose(l[0], r[0], rel_tol=rel_tol))
             self.assertTrue(math.isclose(l[1], r[1], rel_tol=rel_tol))
 
@@ -21,21 +28,22 @@ class TestCircleRouting(unittest.TestCase):
         self,
         circle: TargetCircle,
         vision: float,
-        # TODO: what do function types look like in python??
-        method,
         expected: list[LatLon],
     ):
-        path = method(circle, vision)
+        """Call the routing method with the given circle and vision, and assert that it returns `expected`."""
+        path = self.__class__.routing_method(circle, vision)
         self.assert_latlon_lists_equal(path, expected)
 
 
 class TestCircleRoutingMethod1(TestCircleRouting):
+    routing_method = TargetCircle.path_method1
+
     def test1(self):
         centre = (10.0, 10.0)
+        circle = TargetCircle(lat=centre[0], lon=centre[1], radius=20.0)
         self.assert_path_expected(
-            circle=TargetCircle(lat=centre[0], lon=centre[1], radius=20.0),
+            circle=circle,
             vision=5.0,
-            method=TargetCircle.path_method1,
             expected=[
                 centre,
                 (10.0, 30.0),
