@@ -18,7 +18,7 @@ PIP := VENV_ACT + if `uv --version || echo nope` == "nope" {
 }
 
 # run the service
-run port="8080" host="127.0.0.1" *args="--reload": venv
+run port="8080" host="127.0.0.1" *args="--reload": venv test
     {{ VENV_ACT }} uvicorn \
         --host "{{ host }}" \
         --port "{{ port }}" \
@@ -43,7 +43,7 @@ alias dr := drun
 ddebug port="8080": (drun port "--entrypoint" "/bin/bash" "-it")
 
 # build the docker container
-dbuild:
+dbuild: test
     {{ DOCKER }} build -t "{{ DIMAGE }}" .
 
 # create the venv and install dependencies
