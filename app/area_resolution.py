@@ -32,7 +32,9 @@ class TargetCircle(TargetArea):
         An angle will be used such that `vision` is the length of the curved side of the arc(s).
         """
 
+        # calculate arc angle
         inc_angle = math.atan2(vision * 2, self.radius)
+        # minimum number of arcs with this angle to cover the whole circle
         # TODO: does this want to be floor or ceil?
         num_slices = int(math.ceil(2 * math.pi / inc_angle))
         return [inc_angle * i for i in range(num_slices)]
@@ -54,6 +56,7 @@ class TargetCircle(TargetArea):
         coords: list[LatLon] = [self.centre()]
 
         for theta in self.slice_angles(vision):
+            # go to the outside of the next arc, then back in again
             coords.append(self.displace_from_centre(theta, self.radius))
             coords.append(self.centre())
 
@@ -66,11 +69,15 @@ class TargetCircle(TargetArea):
         slices = self.slice_angles(vision)
 
         for i in range(0, len(slices), 2):
+            # go to the outside of the next arc
             theta1 = slices[i]
             coords.append(self.displace_from_centre(theta1, self.radius))
+            # if we're not about to cross our first arc again (ie. this is not the last arc),
+            # move *along* the circumference one arc
             if i + 1 < len(slices):
                 theta2 = slices[i + 1]
                 coords.append(self.displace_from_centre(theta2, self.radius))
+            # then back to the centre :)
             coords.append(self.centre())
 
         return coords
