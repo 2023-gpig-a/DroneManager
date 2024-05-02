@@ -84,8 +84,54 @@ class TargetCircle(TargetArea):
 
     def path_method3(self, vision: float = DRONE_VISION) -> list[LatLon]:
         """Generate a squared zig-zag across the circle."""
-        # TODO
-        return []
+
+        # start at the very "bottom" of the circle
+        start_lat = self.lat - self.radius
+        coords = [(start_lat, self.lon)]
+
+        # generate a sequence of latitudes that we're gonna cross the circle at
+        num_lines = int(math.ceil((self.radius * 2) / vision))
+        latitude_lines: list[float] = [
+            start_lat + (vision * i)
+            # skip the first one since it's our start point
+            for i in range(1, num_lines)
+        ]
+
+        # use pythagoras to calculate the longitude difference between
+        # the centre of the circle and the point(s) at the intersection of
+        # the circle and a given latitude line
+        def get_abs_hor_displacement(latitude: float) -> float:
+            vert_from_centre = math.fabs(self.lat - latitude)
+
+            # pythagoras
+            diff_squares = math.fabs((self.radius**2) - (vert_from_centre**2))
+            return math.sqrt(diff_squares)
+
+        # store whether we're on the left or right of the circle
+        # we arbitrarily start on the left
+        left: bool = true
+        # iterate over the lines in pairs
+        for i in range(0, len(latitude_lines), 2):
+            lat1 = latitude_lines[i]
+            hor_from_centre1 = get_abs_hor_displacement(lat1)
+            # if we're on the left, we need the negative solution
+            if left:
+                hor_from_centre1 = hor_from_centre1 * -1.0
+            coords.append((lat1, self.lon + hor_from_centre1))
+
+            # if we're not in the middle of the last pair,
+            # do the same for the second line of the pair
+            if i + 1 < len(latitude_lines):
+                lat2 = latitude_lines[i + 1]
+                hor_from_centre2 = get_abs_hor_displacement(lat2)
+                if left:
+                    hor_from_centre2 = hor_from_centre2 * -1.0
+                coords.append((lat2, self.lon + hor_from_centre2))
+
+            # swap sides
+            left = not left
+
+        return coords
 
     def search_area(self, vision: float = DRONE_VISION) -> list[LatLon]:
         # TODO: switch to method 3

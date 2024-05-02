@@ -79,16 +79,13 @@ async def get_individual_drone(id: DroneId) -> DroneData:
     return DRONES[id]
 
 
-ROUTING_METHOD = TargetCircle.path_method1
-
-
 @app.post(
     "/drone_dispatch/circle",
     summary="Add a circular area to the queue for drones to search.",
     description="Intended for frontend usage.",
 )
 async def drone_dispatch_circle(target: TargetCircle) -> None:
-    ROUTES_QUEUE.append(ROUTING_METHOD(target, DRONE_VISION))
+    ROUTES_QUEUE.append(target.search_area(DRONE_VISION))
     return
 
 
