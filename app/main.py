@@ -1,8 +1,7 @@
 import random
-from enum import Enum
 from typing import Dict, List, Tuple
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
