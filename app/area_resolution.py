@@ -8,7 +8,15 @@ from .types import LatLon
 DRONE_VISION = 1.0
 
 
-class TargetCircle(BaseModel):
+class TargetArea(BaseModel):
+    """An area to be divided into a search sequence for a drone."""
+
+    def search_area(self, vision: float) -> list[LatLon]:
+        """Get a sequence of points to fully cover the search area."""
+        return []
+
+
+class TargetCircle(TargetArea):
     """Circle centred around a lat/lon with a radius.
 
     Has methods for routing drones to cover it, given a particular (circular) vision radius.
@@ -71,3 +79,7 @@ class TargetCircle(BaseModel):
         """Generate a squared zig-zag across the circle."""
         # TODO
         return []
+
+    def search_area(self, vision: float = DRONE_VISION) -> list[LatLon]:
+        # TODO: switch to method 3
+        return self.path_method2(vision)
