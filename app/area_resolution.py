@@ -19,10 +19,11 @@ class TargetCircle(BaseModel):
     radius: float
 
     def slice_angles(self, vision: float) -> list[float]:
-        """Get the maximum angle to divide the circle into arcs.
+        """Get a sequence of radius angles that divide the circle into arcs.
 
-        An angle will be given such that `vision` is the length of the curved side of the arc(s).
+        An angle will be used such that `vision` is the length of the curved side of the arc(s).
         """
+
         inc_angle = math.atan2(vision * 2, self.radius)
         # TODO: does this want to be floor or ceil?
         num_slices = int(math.ceil(2 * math.pi / inc_angle))
