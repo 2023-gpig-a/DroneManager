@@ -36,24 +36,25 @@ class TargetCircle(BaseModel):
         newlon: float = (math.cos(theta) * dist) + self.lon
         return (newlat, newlon)
 
+    def centre(self) -> LatLon:
+        """Convenience method to get the centre of the circle."""
+        return (self.lat, self.lon)
+
     def path_method1(self, vision: float = DRONE_VISION) -> list[LatLon]:
         """Generate a radial point sequence."""
 
-        centre: LatLon = (self.lat, self.lon)
-        coords: list[LatLon] = [centre]
+        coords: list[LatLon] = [self.centre()]
 
         for theta in self.slice_angles(vision):
             coords.append(self.displace_from_centre(theta, self.radius))
-            coords.append(centre)
+            coords.append(self.centre())
 
         return coords
 
     def path_method2(self, vision: float = DRONE_VISION) -> list[LatLon]:
         """Generate a radial point sequence, with lower overall distance."""
 
-        centre: LatLon = (self.lat, self.lon)
-        coords: list[LatLon] = [centre]
-
+        coords: list[LatLon] = [self.centre()]
         slices = self.slice_angles(vision)
 
         for i in range(0, len(slices), 2):
@@ -62,10 +63,11 @@ class TargetCircle(BaseModel):
             if i + 1 < len(slices):
                 theta2 = slices[i + 1]
                 coords.append(self.displace_from_centre(theta2, self.radius))
-            coords.append(centre)
+            coords.append(self.centre())
 
         return coords
 
     def path_method3(self, vision: float = DRONE_VISION) -> list[LatLon]:
         """Generate a squared zig-zag across the circle."""
+        # TODO
         return []
