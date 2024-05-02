@@ -62,3 +62,8 @@ lint:
     mypy --exclude "{{ VENV_LOC }}" . || exit 0
     rg -g '!Justfile' TODO
 alias l := lint
+
+# run the test suite
+test:
+    {{ VENV_ACT }} python3 -m unittest discover ./tests
+alias t := test
