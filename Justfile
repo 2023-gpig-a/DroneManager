@@ -1,11 +1,17 @@
 #!/bin/env -S just --justfile
 
 DIMAGE := "gpig/dmas"
-DOCKER := "podman"
+# prefer podman over docker
+DOCKER := if `podman --version || echo nope` == "nope" {
+    "docker"
+} else {
+    "podman"
+}
 
 VENV_LOC := "venv"
 VENV_ACT := "source " + VENV_LOC + "/bin/activate && "
 
+# prefer uv over default pip and venv
 VENV_TOOL := if `uv --version || echo nope` == "nope" {
     "python3 -m venv"
 } else {
@@ -26,7 +32,7 @@ run port="8080" host="127.0.0.1" *args="--reload": venv test
         app.main:app
 alias r := run
 
-# get a python shell with dependencies
+# get a python shell, dependencies and project loaded
 shell: venv
     {{ VENV_ACT }} python -ic 'import app'
 
