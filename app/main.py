@@ -1,11 +1,31 @@
 import random
-from typing import Dict, List, Tuple
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-app = FastAPI()
+from .area_resolution import TargetCircle
+from .types import DroneId, LatLon
+
+app = FastAPI(
+    title="Drone Manager",
+    summary="Middle layer between frontend systems and manufacturer drone interfaces.",
+    description="""Drone Manager is a service which interfaces between abstracted frontend systems which wish to instruct drones to photograph particular areas (and get regular updates), and the systems provided by drone manufacturers to allow remote instruction of drone flight controllers.
+It is intended to provide an abstraction layer over different drone models.
+
+Endpoints are provided for the frontend systems to call to instruct the fleet and get updates on their positions and progress; these are:
+
+- `GET /drone_status*`
+- `POST /drone_dispatch*`
+
+Endpoints for drone controllers are:
+
+- `POST /drone_status*`
+- `GET /next_area`
+
+See respective endpoints for full documentation.
+    """,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,9 +38,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DroneId = str
-LatLon = Tuple[float, float]
-
 
 class DroneData(BaseModel):
     status: str
@@ -30,62 +47,64 @@ class DroneData(BaseModel):
 
 
 DRONE_STATUSES = ["idle", "flying", "unknown"]
-DRONES: Dict[DroneId, DroneData] = dict()
+DRONES: dict[DroneId, DroneData] = dict()
+DRONE_VISION = 1.0
+
+ROUTES_QUEUE: list[list[LatLon]] = []
 
 
-@app.get("/")
+@app.get("/", summary="Hello world sanity check.")
 async def hello_world():
     return {"response": "Hello World"}
 
 
-# get the status (position) of all the drones
-# called by the frontend
-@app.get("/drone_status")
-async def get_drone_status() -> List[Tuple[DroneId, DroneData]]:
-    DRONE_QUANTITY = 5
-    DRONE_CENTER = [54.39, -0.937]
-
-    # TODO: send from internal storage
-    def create_random_drone(id: DroneId) -> Tuple[DroneId, DroneData]:
-        return (
-            id,
-            DroneData(
-                status=str(random.choice(DRONE_STATUSES)),
-                battery=random.randint(0, 100),
-                lastUpdate="",
-                lastSeen=(
-                    DRONE_CENTER[0] + random.random() * 0.05,
-                    DRONE_CENTER[1] + random.random() * 0.05,
-                ),
-            ),
-        )
-
-    return [create_random_drone(str(i + 1)) for i in range(DRONE_QUANTITY)]
+@app.get(
+    "/drone_status",
+    summary="Get all known information about all drones in the field.",
+    description="Intended for frontend usage.",
+)
+async def get_drone_status() -> dict[DroneId, DroneData]:
+    return DRONES
 
 
-class TargetCircle(BaseModel):
-    lat: float
-    lon: float
-    radius: float
+@app.get(
+    "/drone_status/{id}",
+    summary="Get all known information about a particular drone, given its id.",
+    description="Intended for frontend usage.",
+)
+async def get_individual_drone(id: DroneId) -> DroneData:
+    # TODO: handle KeyErrors better
+    return DRONES[id]
 
 
-# send the drone fleet to search a particular area
-# currently only supports a circle
-# called by the frontend
-@app.post("/drone_dispatch/circle")
+@app.post(
+    "/drone_dispatch/circle",
+    summary="Add a circular area to the queue for drones to search.",
+    description="Intended for frontend usage.",
+)
 async def drone_dispatch_circle(target: TargetCircle) -> None:
-    pass
+    ROUTES_QUEUE.append(target.search_area(DRONE_VISION))
+    return
 
 
-# update the stored status of a drone
-# called by the drone simulation
-@app.post("/drone_status/{id}")
+@app.post(
+    "/drone_status/{id}",
+    summary="Update the known status of a drone.",
+    description="""This updates the internal cache of this service, and will be served with the `GET /drone_status` endpoints.
+Intended for backend usage.""",
+)
 async def update_drone_status(id: DroneId, drone: DroneData) -> None:
-    pass
+    DRONES[id] = drone
+    return
 
 
 # retrieve the next sequence of points that a drone needs to go and "scan"
 # called by the drone simulation
-@app.get("/next_area")
-async def get_next_drone_area() -> List[LatLon]:
-    pass
+@app.get(
+    "/next_area",
+    summary="Retrieve the next sequence of points in the queue for a drone to photograph.",
+    description="""**NOTE**: this sequence of points is the *minimal* routing path.
+The drone **must** self-instruct on when photographs are taken, eg. whenever it's out of range of the last photo taken, instead of just taking one at each node.""",
+)
+async def get_next_drone_area() -> list[LatLon]:
+    return ROUTES_QUEUE.pop()
