@@ -12,7 +12,7 @@ python3 -m venv venv
 . venv/bin/activate # linux
 ./venv/Scripts/activate # windows
 pip install -r requirements.txt
-uvicorn dronemanager.app.main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Running with docker
