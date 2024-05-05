@@ -1,5 +1,7 @@
 #!/bin/env -S just --justfile
 
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
 DIMAGE := "gpig/dmas"
 # prefer podman over docker
 DOCKER := if `podman --version || echo nope` == "nope" {
@@ -9,7 +11,11 @@ DOCKER := if `podman --version || echo nope` == "nope" {
 }
 
 VENV_LOC := "venv"
-VENV_ACT := "source " + VENV_LOC + "/bin/activate && "
+VENV_ACT := if os() == "windows" {
+    VENV_LOC + "/Scripts/activate && "
+} else {
+    "source " + VENV_LOC + "/bin/activate && "
+}
 
 # prefer uv over default pip and venv
 VENV_TOOL := if `uv --version || echo nope` == "nope" {
