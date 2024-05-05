@@ -11,7 +11,6 @@ It also allows the frontend to get information about the drones' statuses.
 python3 -m venv venv
 . venv/bin/activate # linux
 ./venv/Scripts/activate # windows
-python3 -m pip install -e
 pip install -r requirements.txt
 uvicorn dronemanager.app.main:app --reload
 ```
@@ -32,5 +31,6 @@ You can view the endpoints and accompanying API doc by running the service, then
 You can run the tests with:
 
 ```bash
-. venv/bin/activate && python3 -m unittest discover -s tests
+. venv/bin/activate && python3 -m unittest discover -s tests # linux
+./venv/Scripts/activate && python3 -m unittest discover -s tests # windows
 ```
