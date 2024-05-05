@@ -43,11 +43,11 @@ class TargetCircle(TargetArea):
 
         newlat: float = (math.sin(theta) * dist) + self.lat
         newlon: float = (math.cos(theta) * dist) + self.lon
-        return (newlat, newlon)
+        return newlat, newlon
 
     def centre(self) -> LatLon:
         """Convenience method to get the centre of the circle."""
-        return (self.lat, self.lon)
+        return self.lat, self.lon
 
     def path_method1(self, vision: float = DRONE_VISION) -> list[LatLon]:
         """Generate a radial point sequence."""

@@ -69,7 +69,7 @@ async def get_drone_status() -> dict[DroneId, DroneData]:
 
 @app.get(
     "/drone_status/{id}",
-    summary="Get all known information about a particular drone, given it's id.",
+    summary="Get all known information about a particular drone, given its id.",
     description="Intended for frontend usage.",
 )
 async def get_individual_drone(id: DroneId) -> DroneData:
