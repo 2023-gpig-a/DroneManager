@@ -1,4 +1,7 @@
 **__pycache__
-Justfile
 **venv
+.dockerignore
+.git
+.mypy_cache
+Justfile
 tests
