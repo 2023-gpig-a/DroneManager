@@ -3,6 +3,8 @@ import math
 from app.area_resolution import TargetCircle
 from app.types import LatLon
 
+from typing import Callable
+
 
 class TestCircleRouting(unittest.TestCase):
     """Base class to test the different routing methods.
@@ -10,7 +12,8 @@ class TestCircleRouting(unittest.TestCase):
     Each class that inherits from this should test one routing method, and override `routing_method`.
     """
 
-    routing_method = None
+    # not a huge fan of mypy forcing this monstrosity just for an abstract var
+    routing_method: Callable[[TargetCircle, float], list[LatLon]] = lambda x, y: []
 
     def assert_latlon_lists_equal(
         self,
