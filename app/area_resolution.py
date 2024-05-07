@@ -111,5 +111,4 @@ class TargetCircle(TargetArea):
         return coords
 
     def search_area(self, vision: float) -> list[LatLon]:
-        # TODO: switch to method 3
-        return self.path_method2(vision)
+        return self.path_method3(vision)
