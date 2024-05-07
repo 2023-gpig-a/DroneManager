@@ -31,7 +31,6 @@ class TargetCircle(TargetArea):
         # calculate arc angle
         inc_angle = math.atan2(vision * 2, self.radius)
         # minimum number of arcs with this angle to cover the whole circle
-        # TODO: does this want to be floor or ceil?
         num_slices = int(math.ceil(2 * math.pi / inc_angle))
         return [inc_angle * i for i in range(num_slices)]
 
