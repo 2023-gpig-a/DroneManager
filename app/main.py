@@ -1,6 +1,6 @@
 import random
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -73,8 +73,10 @@ async def get_drone_status() -> dict[DroneId, DroneData]:
     description="Intended for frontend usage.",
 )
 async def get_individual_drone(id: DroneId) -> DroneData:
-    # TODO: handle KeyErrors better
-    return DRONES[id]
+    try:
+        return DRONES[id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail="no drone with that id")
 
 
 @app.post(
