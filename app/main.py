@@ -88,7 +88,7 @@ async def get_individual_drone(id: DroneId) -> DroneData:
 async def drone_dispatch_circle(
     target: TargetCircle, vision_radius: float = DRONE_VISION
 ) -> None:
-    ROUTES_QUEUE.append(target.search_area(DRONE_VISION))
+    ROUTES_QUEUE.append(target.search_area(vision_radius))
     return
 
 
