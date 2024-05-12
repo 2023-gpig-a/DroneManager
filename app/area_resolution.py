@@ -3,9 +3,6 @@ import math
 
 from .types import LatLon
 
-# TODO: replace with good number
-DRONE_VISION = 1.0
-
 
 class TargetArea(BaseModel):
     """An area to be divided into a search sequence for a drone."""
@@ -34,7 +31,6 @@ class TargetCircle(TargetArea):
         # calculate arc angle
         inc_angle = math.atan2(vision * 2, self.radius)
         # minimum number of arcs with this angle to cover the whole circle
-        # TODO: does this want to be floor or ceil?
         num_slices = int(math.ceil(2 * math.pi / inc_angle))
         return [inc_angle * i for i in range(num_slices)]
 
@@ -49,7 +45,7 @@ class TargetCircle(TargetArea):
         """Convenience method to get the centre of the circle."""
         return self.lat, self.lon
 
-    def path_method1(self, vision: float = DRONE_VISION) -> list[LatLon]:
+    def path_method1(self, vision: float) -> list[LatLon]:
         """Generate a radial point sequence."""
 
         coords: list[LatLon] = [self.centre()]
@@ -61,7 +57,7 @@ class TargetCircle(TargetArea):
 
         return coords
 
-    def path_method2(self, vision: float = DRONE_VISION) -> list[LatLon]:
+    def path_method2(self, vision: float) -> list[LatLon]:
         """Generate a radial point sequence, with lower overall distance."""
 
         coords: list[LatLon] = [self.centre()]
@@ -81,7 +77,7 @@ class TargetCircle(TargetArea):
 
         return coords
 
-    def path_method3(self, vision: float = DRONE_VISION) -> list[LatLon]:
+    def path_method3(self, vision: float) -> list[LatLon]:
         """Generate a zig-zag across the circle."""
 
         # start at the very "bottom" of the circle
@@ -113,6 +109,5 @@ class TargetCircle(TargetArea):
 
         return coords
 
-    def search_area(self, vision: float = DRONE_VISION) -> list[LatLon]:
-        # TODO: switch to method 3
-        return self.path_method2(vision)
+    def search_area(self, vision: float) -> list[LatLon]:
+        return self.path_method3(vision)

@@ -1,6 +1,7 @@
 import random
+import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -48,7 +49,7 @@ class DroneData(BaseModel):
 
 DRONE_STATUSES = ["idle", "flying", "unknown"]
 DRONES: dict[DroneId, DroneData] = dict()
-DRONE_VISION = 1.0
+DRONE_VISION = os.environ.get("DM_DRONE_VISION_RADIUS", 10.0)
 
 ROUTES_QUEUE: list[list[LatLon]] = []
 
@@ -73,8 +74,10 @@ async def get_drone_status() -> dict[DroneId, DroneData]:
     description="Intended for frontend usage.",
 )
 async def get_individual_drone(id: DroneId) -> DroneData:
-    # TODO: handle KeyErrors better
-    return DRONES[id]
+    try:
+        return DRONES[id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail="no drone with that id")
 
 
 @app.post(
@@ -82,8 +85,10 @@ async def get_individual_drone(id: DroneId) -> DroneData:
     summary="Add a circular area to the queue for drones to search.",
     description="Intended for frontend usage.",
 )
-async def drone_dispatch_circle(target: TargetCircle) -> None:
-    ROUTES_QUEUE.append(target.search_area(DRONE_VISION))
+async def drone_dispatch_circle(
+    target: TargetCircle, vision_radius: float = DRONE_VISION
+) -> None:
+    ROUTES_QUEUE.append(target.search_area(vision_radius))
     return
 
 

@@ -22,6 +22,8 @@ docker build -t drone_manager_image .
 docker run -d --name dronemanager -p 8080:8080 drone_manager_image
 ```
 
+You can set the environment variable `DM_DRONE_VISION_RADIUS` to configure the vision radius of the drones.
+
 ## Endpoints
 
 You can view the endpoints and accompanying API doc by running the service, then going to `http://hostname:port/docs`.
