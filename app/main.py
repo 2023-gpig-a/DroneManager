@@ -49,7 +49,7 @@ class DroneData(BaseModel):
 
 DRONE_STATUSES = ["idle", "flying", "unknown"]
 DRONES: dict[DroneId, DroneData] = dict()
-DRONE_VISION = os.environ.get("DM_DRONE_VISION_RADIUS", 10.0)
+DRONE_VISION = os.environ.get("DM_DRONE_VISION_RADIUS", 0.001)
 
 ROUTES_QUEUE: list[list[LatLon]] = []
 
@@ -112,4 +112,7 @@ async def update_drone_status(id: DroneId, drone: DroneData) -> None:
 The drone **must** self-instruct on when photographs are taken, eg. whenever it's out of range of the last photo taken, instead of just taking one at each node.""",
 )
 async def get_next_drone_area() -> list[LatLon]:
+    print(ROUTES_QUEUE)
+    if len(ROUTES_QUEUE) == 0:
+        return []
     return ROUTES_QUEUE.pop()

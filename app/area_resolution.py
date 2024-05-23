@@ -86,6 +86,7 @@ class TargetCircle(TargetArea):
 
         # generate a sequence of latitudes that we're gonna cross the circle at
         num_lines = int(math.ceil((self.radius * 2) / vision))
+        print(self.radius, vision, num_lines)
         latitude_lines: list[float] = [
             start_lat + (vision * i)
             # skip the first one since it's our start point
